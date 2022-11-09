@@ -5,8 +5,6 @@ const getData = {
     try {
       const body = req.body;
 
-      console.log(body);
-
       let tempData = {
         nama: body.nama,
         alamat: body.alamat,
@@ -14,16 +12,19 @@ const getData = {
         no_handphone: body.no_handphone,
       };
 
-      var data = fs.readFileSync("user.json");
-      var myObject = JSON.parse(data);
-
-      var newData = JSON.stringify(myObject);
-
-      fs.writeFile("user.json", newData, (err) => {
-        // error checking
-        if (err) throw err;
-
-        console.log("New data added");
+      if (!body.nama || !body.alamat || !body.email || !body.no_handphone) {
+        return res.status(400).json({
+          status: true,
+          data: null,
+          msg: "Data harus lengkap.",
+        });
+      }
+      fs.writeFile("./user.json", JSON.stringify(tempData, null, 2), (err) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("Successfully stored data.");
+        }
       });
 
       res.status(200).json({
@@ -31,7 +32,30 @@ const getData = {
         data: tempData,
         msg: "Berhasil submit data nama",
       });
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  getName: async (req, res) => {
+    try {
+      const jsonString = fs.readFileSync("./user.json", "utf-8");
+      const data = JSON.parse(jsonString);
+
+      if (!data)
+        return res.status(400).send({
+          status: false,
+          data: null,
+          msg: "Data tidak ada.",
+        });
+
+      res.status(200).json({
+        status: true,
+        data,
+        msg: "Berhasil mengambil data nama",
+      });
+    } catch (err) {
+      console.log(err);
+    }
   },
 };
 
